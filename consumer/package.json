@@ -1,0 +1,22 @@
+{
+  "name": "consumer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "consumer.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "consumer": "ts-node --transpile-only -r tsconfig-paths/register src/consumer.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.10.8",
+    "nodemailer": "^7.0.5"
+  },
+  "devDependencies": {
+    "@types/nodemailer": "^6.4.17",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0"
+  }
+}
