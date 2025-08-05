@@ -1,5 +1,11 @@
 import amqp from 'amqplib';
 import nodemailer from 'nodemailer';
+interface Mail {
+  from: string;
+  to: string;
+  subject: string;
+  text: string;
+}
 
 let connection;
 let channel;
@@ -8,7 +14,7 @@ let isManualClose = false;
 
 const connectToRabbitMQ = async () => {
   try {
-    const queue = 'queueNameTest';
+    const queue = 'mailQueue';
 
     connection = await amqp.connect('amqp://rabbitmq:5672');
 
@@ -30,29 +36,41 @@ const connectToRabbitMQ = async () => {
     channel.consume(queue, (msg) => {
       try {
         console.log('Message:', msg.content.toString());
-        sendMail();
+        sendMail(JSON.parse(msg.content.toString()));
         channel.ack(msg);
       } catch (error) {
         channel.nack(msg);
       }
     });
   } catch (err) {
-    console.error('Connection failed:', err.message);
+    if (err instanceof Error) {
+      console.error('Connection failed:', err.message);
+    } else {
+      console.error('Connection failed:', err);
+    }
     setTimeout(connectToRabbitMQ, 5000);
   }
 };
-const sendMail = async () => {
+const sendMail = async (data: Mail) => {
+  const {from, to, subject, text} = data;
+
   const transporter = nodemailer.createTransport({
-    host: 'localhost',
+    host: 'mailhog',
     port: 1025,
     secure: false,
   });
 
+  // await transporter.sendMail({
+  //   from: '"Test" <example@example.com>',
+  //   to: 'example@example.com',
+  //   subject: 'Merhaba',
+  //   text: 'Bu bir test mailidir.',
+  // });
   await transporter.sendMail({
-    from: '"Test" <example@example.com>',
-    to: 'example@example.com',
-    subject: 'Merhaba',
-    text: 'Bu bir test mailidir.',
+    from,
+    to,
+    subject,
+    text,
   });
 };
 process.on('SIGINT', async () => {
